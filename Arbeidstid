@@ -1,0 +1,79 @@
+// [ord, forklaring, eksempel, type]
+const ALL = [
+  ["heltid", "Du jobber 100 %. Det er en full jobb.", "Jeg jobber heltid i en matbutikk.", "Ord"],
+  ["deltid", "Du jobber mindre enn 100 %. Det er ikke full jobb.", "Hun jobber deltid på sykehuset.", "Ord"],
+  ["fast arbeidstid", "Du begynner og slutter til samme tid hver dag.", "Jeg har fast arbeidstid. Jeg begynner kl. 7 og slutter kl. 15.", "Ord"],
+  ["full jobb", "100 % stilling. 37,5 eller 40 timer i uka.", "Jeg har full jobb.", "Ord"],
+  ["tidligvakt", "Du begynner på jobb tidlig på dagen.", "På mandag har jeg tidligvakt.", "Ord"],
+  ["senvakt", "Du jobber seint på dagen eller på kvelden.", "I dag har jeg senvakt.", "Ord"],
+  ["ekstravakt", "En vakt i tillegg til vanlig arbeidstid.", "Jeg tar ofte ekstravakter.", "Ord"],
+  ["å avspasere", "Du tar fri fordi du har jobbet ekstra.", "Jeg skal avspasere på fredag.", "Ord"],
+  ["å jobbe turnus", "Du jobber ulike vakter etter en plan. For eksempel på sykehus.", "Jeg jobber turnus. Jeg jobber hver tredje helg.", "Ord"],
+  ["å jobbe skift", "Du jobber på ulike tider, for eksempel tidlig og seint.", "Jeg jobber skift i butikken.", "Ord"],
+  ["fleksitid", "Du kan velge når du kommer og går, mellom to klokkeslett.", "Han kan komme mellom kl. 7 og kl. 9.", "Ord"],
+  ["kjernetid", "Tiden du må være på jobb, også med fleksitid.", "Kjernetid er kl. 9–15.", "Ord"],
+  ["ekstratid", "Tid du jobber i tillegg til åtte timer.", "Da får jeg ekstratid.", "Ord"],
+  ["Hvor mange timer jobber du i uka?", "Spørsmål om arbeidstid.", "Arbeidsuka mi er på 40 timer.", "Uttrykk"],
+  ["Jobber du fullt?", "Spørsmål: Har du 100 % stilling?", "Ja, jeg har en 100 % stilling.", "Uttrykk"],
+  ["Arbeidstiden min varierer.", "Du jobber ikke til samme tid hver dag.", "Arbeidstiden min varierer fra uke til uke.", "Uttrykk"],
+  ["Jeg må avtale det med sjefen.", "Du må snakke med sjefen først.", "Jeg vil jobbe lenger, men jeg må avtale det med sjefen først.", "Uttrykk"]
+];
+ 
+let deck = [...ALL];
+let i = 0;
+let known = new Set();
+ 
+const $ = id => document.getElementById(id);
+const card = $("card");
+ 
+function render() {
+  if (!deck.length) return;
+  const c = deck[i];
+  card.classList.remove("flip");
+  $("term").textContent = c[0];
+  $("def").textContent = c[1];
+  $("ex").textContent = "“" + c[2] + "”";
+  $("tag").textContent = c[3];
+  $("ct").textContent = `Kort ${i + 1} av ${deck.length} · Kan: ${known.size}`;
+  $("pb").style.width = (known.size / ALL.length * 100) + "%";
+  $("done").style.display = "none";
+  $("scene").style.display = "";
+}
+ 
+function go(step) {
+  i = (i + step + deck.length) % deck.length;
+  render();
+}
+ 
+$("scene").onclick = () => card.classList.toggle("flip");
+$("flip").onclick = () => card.classList.toggle("flip");
+$("next").onclick = () => go(1);
+$("prev").onclick = () => go(-1);
+ 
+$("know").onclick = () => {
+  known.add(deck[i][0]);
+  deck.splice(i, 1);
+  if (!deck.length) {
+    $("pb").style.width = "100%";
+    $("scene").style.display = "none";
+    $("ct").textContent = "Ferdig!";
+    $("done").style.display = "block";
+    return;
+  }
+  i %= deck.length;
+  render();
+};
+ 
+$("shuf").onclick = () => { deck.sort(() => Math.random() - 0.5); i = 0; render(); };
+$("reset").onclick = () => { deck = [...ALL]; known = new Set(); i = 0; render(); };
+ 
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") go(1);
+  else if (e.key === "ArrowLeft") go(-1);
+  else if (e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") {
+    e.preventDefault();
+    card.classList.toggle("flip");
+  }
+});
+ 
+render();
